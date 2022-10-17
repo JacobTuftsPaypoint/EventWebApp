@@ -411,11 +411,9 @@ const BodyElement = document.querySelector("body");
 const SystemButton = document.getElementById("SystemButton")
 const LightButton = document.getElementById("LightButton")
 const DarkButton = document.getElementById("DarkButton")
-const ToggleButton = document.getElementById("ToggleButton")
 SystemButton.addEventListener("click",function(){NoTheme(BodyElement);},false);
 LightButton.addEventListener("click",function(){GoLight(BodyElement);},false);
 DarkButton.addEventListener("click",function(){GoDark(BodyElement);},false);
-ToggleButton.addEventListener("click",function(){ToggleTheme(BodyElement);},false)
 
 //On Page load select theme
 let CurrentTheme = localStorage.getItem("theme");
@@ -436,11 +434,4 @@ function GoLight(BodyElement){
 function NoTheme(BodyElement){
     BodyElement.dataset.theme = "Null";
     localStorage.removeItem("theme")
-}
-function ToggleTheme(BodyElement){
-    if(BodyElement.dataset.theme==="Dark"){
-        GoLight(BodyElement);
-    } else {
-        GoDark(BodyElement);
-    }
 }
