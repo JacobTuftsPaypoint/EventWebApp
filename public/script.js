@@ -1,23 +1,4 @@
-const tagobj = {
-    name:"Sussy"
-}
-
-const eventobj = {
-    name:"Test event",
-    desc:"An event as a test",
-    price:10,
-    date:"2022-11-01T17:00:00",
-    location:"Weatherspoons, Biggleswade",
-    Organiser:"jacob Tufts",
-    img:"https://upload.wikimedia.org/wikipedia/commons/4/4b/%D0%A0%D0%B0%D0%BD%D0%BA%D0%BE%D0%B2%D1%96_%D0%BA%D0%BE%D0%BB%D1%8C%D0%BE%D1%80%D0%B8_%D1%83_%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%BD%D0%B8%D0%BA%D1%83_%D0%91%D0%BE%D0%B1%D1%80%D0%BE%D0%B2%D0%BD%D1%8F.jpg",
-    tags:[
-        "null",
-        "null",
-        "one",
-        "two"
-    ]
-}
-const eventobj2 = "44d5457b-7466-4739-aa1d-24c890fa3f42"
+let ActiveAddTags = false
 
 /*
     Server communication:
@@ -25,7 +6,7 @@ const eventobj2 = "44d5457b-7466-4739-aa1d-24c890fa3f42"
 */
 
 //Adress for local testing
-const localAPI = "http://localhost:7071"
+const localAPI = ""
 const APIAdress = `${localAPI}/api`
 
 //Base GET request as a promise
@@ -67,7 +48,13 @@ function CreateEvent(eventobj) {
 
 //Get event with GUID
 function GetEvent(eventid) {
-    return HTTPGET(`${APIAdress}/event?id=${eventid}`)
+    return HTTPGET(`${APIAdress}/event?id=${eventid}`).then((response)=>{
+        if(response.status==200){
+            return(response.json())
+        } else {
+            return(Promise.reject("Check console for error"))
+        }
+    })
 }
 
 //Get all events
@@ -87,9 +74,24 @@ function DeleteEvent(eventid) {
 }
 
 //Event Listener
-CreateEventCall = document.querySelector("#CreateEvent")
+let CreateEventCall = document.querySelector("#CreateEvent")
 CreateEventCall.addEventListener("click",()=>{
     CreateEventButton()
+})
+
+let DeleteEventCall = document.querySelector("#DeleteEvent")
+DeleteEventCall.addEventListener("click",()=>{
+    DeleteEventButton()
+})
+
+let UpdateEventCall = document.querySelector("#UpdateEvent")
+UpdateEventCall.addEventListener("click",()=>{
+    UpdateEventButton()
+})
+
+let CreateTagCall = document.querySelector("#CreateTag")
+CreateTagCall.addEventListener("click",()=>{
+    CreateTagButton()
 })
 
 //Template for events in grid
@@ -139,10 +141,22 @@ class Event{
             temp.appendChild(document.createTextNode(String(element)))
             this.list3.appendChild(temp)
         });
+        this.id = document.createElement("p")
+        this.id.appendChild(document.createTextNode(obj.id))
+        this.id.classList.add("IDRef")
+        this.container.appendChild(this.id)
     }
 }
 
+function ClearConfig() {
+    let container = document.querySelector("#ConfigHolder")
+    container.innerHTML = ("")
+}
+
 function CreateEventButton() {
+    ClearConfig()
+    ActiveAddTags = true
+    
     const container = document.querySelector("#ConfigHolder")
 
     let EventObject = {
@@ -160,7 +174,13 @@ function CreateEventButton() {
         container.appendChild(document.createElement("br"))
         let newelabel = document.createElement("label")
         newelabel.for = "input_"+element
-        newelabel.appendChild(document.createTextNode(element+":"))
+        if (element == "tags") {
+            newelabel.appendChild(document.createTextNode(element+": (Select from list of tags below)"))
+        } else if (element == "img") {
+            newelabel.appendChild(document.createTextNode(element+": (full URL)"))
+        } else {
+            newelabel.appendChild(document.createTextNode(element+":"))
+        }
         let newinput = document.createElement("input")
         newinput.type = "text"
         newinput.name = "input_"+element
@@ -173,9 +193,14 @@ function CreateEventButton() {
     newbutton.type = "submit"
     newbutton.appendChild(document.createTextNode("Create"))
     container.appendChild(newbutton)
+
+    document.querySelector("#input_tags").setAttribute("readonly",true)
+
     container.addEventListener("submit",()=>{
         console.log("done")
         const formdata = new FormData(container)
+        let TagList = formdata.get("input_tags").split(",")
+        TagList.pop()
         let reqobj ={
             name:formdata.get("input_name"),
             desc:formdata.get("input_desc"),
@@ -184,11 +209,194 @@ function CreateEventButton() {
             location:formdata.get("input_location"),
             Organiser:formdata.get("input_Organiser"),
             img:formdata.get("input_img"),
-            tags:["one","two","three","four"]           
+            tags:TagList        
         }
+        ActiveAddTags = false
         CreateEvent(reqobj)
     })
 }
+
+function DeleteEventButton(){
+    ClearConfig()
+    const container = document.querySelector("#ConfigHolder")
+    container.appendChild(document.createElement("br"))
+    let newelabel = document.createElement("label")
+    newelabel.for = "input_id"
+    newelabel.appendChild(document.createTextNode("id:"))
+    let newinput = document.createElement("input")
+    newinput.type = "text"
+    newinput.name = "input_id"
+    newinput.id = "input_id"
+    container.appendChild(newelabel)
+    container.appendChild(newinput)
+    container.appendChild(document.createElement("br"))
+    let newbutton = document.createElement("button")
+    newbutton.type = "submit"
+    newbutton.appendChild(document.createTextNode("Delete"))
+    container.appendChild(newbutton)
+    container.addEventListener("submit",(event)=>{
+        const formdata = new FormData(container)
+        const input = formdata.get("input_id")
+        event.preventDefault()
+        GetEvent(input).then((result)=>{
+            ClearConfig()
+            let gotobject = result.Tags
+            question = document.createElement("h2")
+            question.appendChild(document.createTextNode(gotobject.name))
+            container.appendChild(question)
+            let newbutton = document.createElement("button")
+            newbutton.appendChild(document.createTextNode("Keep"))
+            newbutton.addEventListener("click",()=>{
+                ClearConfig()
+            })
+            newbutton.classList.add("GreenButton")
+            container.appendChild(newbutton)
+            let newbutton2 = document.createElement("button")
+            newbutton2.appendChild(document.createTextNode("Delete"))
+            newbutton2.addEventListener("click",()=>{
+                console.log("delete attempt")
+                DeleteEvent(input)
+                location.reload()
+            })
+            newbutton2.classList.add("RedButton")
+            container.appendChild(newbutton2)
+
+        })
+    })
+}
+
+function UpdateEventButton(){
+    ClearConfig()
+    ActiveAddTags = true
+    const container = document.querySelector("#ConfigHolder")
+    container.appendChild(document.createElement("br"))
+    let newelabel = document.createElement("label")
+    newelabel.for = "input_id"
+    newelabel.appendChild(document.createTextNode("id:"))
+    let newinput = document.createElement("input")
+    newinput.type = "text"
+    newinput.name = "input_id"
+    newinput.id = "input_id"
+    container.appendChild(newelabel)
+    container.appendChild(newinput)
+    container.appendChild(document.createElement("br"))
+    let newbutton = document.createElement("button")
+    newbutton.appendChild(document.createTextNode("Update"))
+    container.appendChild(newbutton)
+    newbutton.addEventListener("click",(event)=>{
+        const formdata = new FormData(container)
+        const input = formdata.get("input_id")
+        event.preventDefault()
+        GetEvent(input).then((result)=>{
+            ClearConfig()
+            Object.keys(result.Tags).forEach(element => {
+                if (element[0]!="_" && element!="id") { 
+                    container.appendChild(document.createElement("br"))
+                    let newelabel = document.createElement("label")
+                    newelabel.for = "input_"+element
+                    if (element == "tags") {
+                        newelabel.appendChild(document.createTextNode(element+": (Select from list of tags below)"))
+                    } else if (element == "img") {
+                        newelabel.appendChild(document.createTextNode(element+": (full URL)"))
+                    } else {
+                        newelabel.appendChild(document.createTextNode(element+":"))
+                    }
+                    let newinput = document.createElement("input")
+                    newinput.type = "text"
+                    newinput.name = "input_"+element
+                    newinput.id = "input_"+element
+                    newinput.value = result.Tags[element]
+                    if(element=="tags"){
+                        newinput.value+=","
+                    }
+                    container.appendChild(newelabel)
+                    container.appendChild(newinput)
+                }
+            })
+            container.appendChild(document.createElement("br"))
+            let newbutton3 = document.createElement("button")
+            newbutton3.type = "submit"
+            newbutton3.appendChild(document.createTextNode("Update"))
+            container.appendChild(newbutton3)
+
+            console.log(result.Tags.id)
+        
+            document.querySelector("#input_tags").setAttribute("readonly",true)
+        
+            container.addEventListener("submit",()=>{
+                event.preventDefault()
+                DeleteEvent(result.Tags.id)
+                console.log("ooooo")
+                const formdata = new FormData(container)
+                let TagList = formdata.get("input_tags").split(",")
+                TagList.pop()
+                let reqobj ={
+                    id:result.Tags.id,
+                    name:formdata.get("input_name"),
+                    desc:formdata.get("input_desc"),
+                    price:formdata.get("input_price"),
+                    date:formdata.get("input_date"),
+                    location:formdata.get("input_location"),
+                    Organiser:formdata.get("input_Organiser"),
+                    img:formdata.get("input_img"),
+                    tags:TagList        
+                }
+                ActiveAddTags = false
+                CreateEvent(reqobj)
+            })
+        })
+    })
+}
+
+function CreateTagButton() {
+    ClearConfig()
+    const container = document.querySelector("#ConfigHolder")
+    container.appendChild(document.createElement("br"))
+    let newelabel = document.createElement("label")
+    newelabel.for = "input_name"
+    newelabel.appendChild(document.createTextNode("name:  (Max Length 20 && Must not exist)"))
+    let newinput = document.createElement("input")
+    newinput.type = "text"
+    newinput.name = "input_name"
+    newinput.id = "input_name"
+    container.appendChild(newelabel)
+    container.appendChild(newinput)
+    container.appendChild(document.createElement("br"))
+    let newbutton = document.createElement("button")
+    newbutton.type = "submit"
+    newbutton.appendChild(document.createTextNode("Create"))
+    container.appendChild(newbutton)
+    container.addEventListener("submit",(event)=>{
+        const formdata = new FormData(container)
+        const input = formdata.get("input_name")
+        const TagArray = GetTagAll().then((result)=>{
+            return result
+        }).then((result)=>{
+            let sorted = result.Tags.map(a => a.name);
+            let doesinclude = sorted.includes(input)
+            if (formdata.get("input_name").length<=20 && doesinclude == false) {
+                CreateTag(input)
+            }
+        })
+    })
+}
+
+GetTagAll().then((result)=>{
+    const TagList = result.Tags
+    const container = document.querySelector("#TagList")
+    TagList.forEach(element => {
+        let item = document.createElement("p")
+        item.classList.add("TagItem")
+        item.appendChild(document.createTextNode(element.name))
+        item.addEventListener("click",()=>{
+            if(ActiveAddTags == true){
+                let target = document.querySelector("#input_tags")
+                target.value += `${element.name},`
+            }
+        })
+        container.appendChild(item)
+    });
+})
 
 GetEventAll().then((result)=>{
     result.Events.forEach(element => {
@@ -196,9 +404,43 @@ GetEventAll().then((result)=>{
     });
 })
 
+/*
+    Theme Selector
+*/
+const BodyElement = document.querySelector("body");
+const SystemButton = document.getElementById("SystemButton")
+const LightButton = document.getElementById("LightButton")
+const DarkButton = document.getElementById("DarkButton")
+const ToggleButton = document.getElementById("ToggleButton")
+SystemButton.addEventListener("click",function(){NoTheme(BodyElement);},false);
+LightButton.addEventListener("click",function(){GoLight(BodyElement);},false);
+DarkButton.addEventListener("click",function(){GoDark(BodyElement);},false);
+ToggleButton.addEventListener("click",function(){ToggleTheme(BodyElement);},false)
 
+//On Page load select theme
+let CurrentTheme = localStorage.getItem("theme");
+if(CurrentTheme==="Dark"){
+    GoDark(BodyElement);
+} else if(CurrentTheme==="Light"){
+    GoLight(BodyElement);
+}
 
-
-GetTagAll().then((result)=>{
-    console.log(result)
-})
+function GoDark(BodyElement){
+    BodyElement.dataset.theme = "Dark";
+    localStorage.setItem("theme","Dark");
+}
+function GoLight(BodyElement){
+    BodyElement.dataset.theme = "Light";
+    localStorage.setItem("theme","Light");
+}
+function NoTheme(BodyElement){
+    BodyElement.dataset.theme = "Null";
+    localStorage.removeItem("theme")
+}
+function ToggleTheme(BodyElement){
+    if(BodyElement.dataset.theme==="Dark"){
+        GoLight(BodyElement);
+    } else {
+        GoDark(BodyElement);
+    }
+}

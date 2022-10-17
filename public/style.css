@@ -218,7 +218,7 @@ main article ul {
     font-weight: 400;  
 }
 main article img{
-    max-width: 25vw;
+    max-width: 200px;
     height: auto;
 }
 main article .infoholder{
@@ -260,6 +260,7 @@ article .tags li {
     padding: 0.2rem;
     background-color: #ffffff;
     cursor: default;
+    color: black;
 }
 footer{
     margin: 2rem;
@@ -310,4 +311,42 @@ button{
 
 #ConfigHolder button:hover {
     box-shadow: var(--BackGroundColour4) 4px 4px;
+}
+
+.IDRef{
+    background-color: red;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#TagList{
+    display: flex;
+    flex-flow: row wrap;
+    column-gap: 0.2rem;
+    row-gap: 0.2rem;
+    background-color: var(--BlueHighlight4);
+    border-radius: 1rem;
+    margin: 2rem;
+    justify-content: space-evenly;
+}
+#TagList h2{
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+}
+#TagList p{
+    border-radius: 0.2rem;
+    padding: 0.2rem;
+    background-color: #ffffff;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 400;
+}
+
+#ConfigHolder .GreenButton{
+    color: green;
+    margin: 0.5rem;
+}
+#ConfigHolder .RedButton{
+    margin: 0.5rem;
+    color: red;
 }
