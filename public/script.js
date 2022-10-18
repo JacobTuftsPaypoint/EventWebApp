@@ -369,15 +369,7 @@ function CreateTagButton() {
     container.addEventListener("submit",(event)=>{
         const formdata = new FormData(container)
         const input = formdata.get("input_name")
-        const TagArray = GetTagAll().then((result)=>{
-            return result
-        }).then((result)=>{
-            let sorted = result.Tags.map(a => a.name);
-            let doesinclude = sorted.includes(input)
-            if (formdata.get("input_name").length<=20 && doesinclude == false) {
-                CreateTag(input)
-            }
-        })
+        CreateTag(input)
     })
 }
 
