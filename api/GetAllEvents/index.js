@@ -1,4 +1,5 @@
 module.exports = async function (context, req) {
+    require('dotenv').config();
     const cosmos = require('@azure/cosmos');
     const endpoint = process.env["CosmosEndpoint"];
     const key = process.env["CosmosKey"];
