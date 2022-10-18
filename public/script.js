@@ -6,7 +6,7 @@ let ActiveAddTags = false
 */
 
 //Adress for local testing
-const localAPI = ""
+const localAPI = "http://localhost:7071"
 const APIAdress = `${localAPI}/api`
 
 //Base GET request as a promise
