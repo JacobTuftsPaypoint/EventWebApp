@@ -1,6 +1,6 @@
 const cosmos = require('@azure/cosmos');
-const endpoint = process.env.CosmosEndpoint;
-const key = process.env.CosmosKey;
+const endpoint = "https://eventwebappdatabase.documents.azure.com:443/";
+const key = "HGel9WGpWShhRhbF4Nk7cHsWdws24SfsxYrtykKNiRmIzTWDzoWQR2iz92q6rAFY1f6sSyURdkbgJHnohyZeEg==";
 const { CosmosClient } = cosmos;
 
 const client = new CosmosClient({ endpoint, key });
